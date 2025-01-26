@@ -9,12 +9,21 @@ class CitySerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 class EventSerializer(serializers.ModelSerializer):
-    city = serializers.PrimaryKeyRelatedField(queryset=City.objects.all())
+    user_vote = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
-        fields = '__all__'
-        read_only_fields = ['created_by']
+        fields = ['id', 'name', 'description', 'city', 'date', 'latitude', 'longitude', 'pos_votes', 'neg_votes', 'image', 'user_vote']
+        extra_kwargs = {
+            'user_vote': {'read_only': True}
+        }
+
+    def get_user_vote(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            vote = Vote.objects.filter(user=request.user, event=obj).first()
+            return vote.vote_type if vote else None
+        return None
 
 
 class VoteSerializer(serializers.ModelSerializer):

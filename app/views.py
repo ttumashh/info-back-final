@@ -105,9 +105,13 @@ class EventListFilterByCityView(generics.ListAPIView):
 
     def get_queryset(self):
         city_id = self.request.query_params.get('city_id')
-        if city_id:
-            return Event.objects.filter(city_id=city_id)
-        return Event.objects.all()
+        queryset = Event.objects.filter(city_id=city_id) if city_id else Event.objects.all()
+        return queryset
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["request"] = self.request
+        return context
     
 
 class EventListSortedByVotesView(generics.ListAPIView):
@@ -120,6 +124,11 @@ class EventListSortedByVotesView(generics.ListAPIView):
             raise serializers.ValidationError('city_id is required')
         
         return Event.objects.filter(city_id=city_id).order_by('-pos_votes')
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['user'] = self.request.user
+        return context
     
 
 class UserView(APIView):

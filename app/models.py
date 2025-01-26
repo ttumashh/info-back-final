@@ -38,7 +38,7 @@ class Event(models.Model):
     neg_votes = models.PositiveIntegerField(default=0)
     image = models.ImageField(upload_to='images/', blank=False, null=False)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
-
+    
     class Meta:
         ordering = ['-date']
 
@@ -49,6 +49,6 @@ class Event(models.Model):
             super().save(update_fields=['pos_votes', 'neg_votes']) 
 
     def save(self, *args, **kwargs):
-        is_new_instance = self.pk is None  
-        if not is_new_instance:  
+        super().save(*args, **kwargs)
+        if self.pk:
             self.update_votes()
